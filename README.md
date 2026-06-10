@@ -94,5 +94,12 @@ curl -X POST http://localhost:8001/predict \
 - CosineAnnealingLR learning rate scheduling
 - Production image upload API with FastAPI
 
+## Output
+
+<img width="1860" height="880" alt="Screenshot 2026-06-10 171829" src="https://github.com/user-attachments/assets/582a193f-da8c-4467-bd53-61c113142f85" />
+
+<img width="1823" height="892" alt="Screenshot 2026-06-10 171844" src="https://github.com/user-attachments/assets/a894bf93-e774-457e-a2f1-3827236a7608" />
+
+
 ## Author
    Pavithra Nagineni
