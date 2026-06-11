@@ -27,14 +27,11 @@ Download from Kaggle:
 ## Project Structure
 Pneumonia_Detection/
 
-├── train.py       
-            # ResNet transfer learning training
+├── train.py       # ResNet transfer learning training
             
-├── app.py         
-            # FastAPI inference server
+├── app.py         # FastAPI inference server
             
-├── download_data.py 
-            # Kaggle dataset downloader
+├── download_data.py # Kaggle dataset downloader
             
 ├── requirements.txt
 
