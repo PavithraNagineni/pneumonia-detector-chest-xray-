@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Secrets & credentials
+.env
+.kaggle/
+
+# Dataset & large model files (re-download / re-train locally)
+data/
+*.pth
+*.pt
+*.zip
+
+# Generated outputs (plots & checkpoints)
+outputs/**/*.png
+outputs/**/best_model.pth
+
+# User-uploaded sample images
+samples/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

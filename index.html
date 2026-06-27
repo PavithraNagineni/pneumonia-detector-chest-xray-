@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pneumonia Detection Dashboard</title>
+  <style>
+    :root {
+      --bg: #060d1a;
+      --surface: #0d1b2e;
+      --card: #112240;
+      --border: #1e3a5f;
+      --accent: #38bdf8;
+      --accent2: #818cf8;
+      --danger: #f87171;
+      --success: #34d399;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --subtle: #94a3b8;
+      --radius: 12px;
+      --font: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Top bar ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-icon {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--subtle);
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background .3s;
+    }
+
+    .dot.ok {
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success);
+    }
+
+    .dot.err {
+      background: var(--danger);
+      box-shadow: 0 0 6px var(--danger);
+    }
+
+    /* ── Nav tabs ── */
+    nav {
+      display: flex;
+      gap: 4px;
+      padding: 0 32px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      padding: 14px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color .2s, border-color .2s;
+      white-space: nowrap;
+    }
+
+    .tab:hover {
+      color: var(--text);
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .panel {
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    /* ── Stat cards row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .stat-sub {
+      font-size: 12px;
+      color: var(--subtle);
+      margin-top: 4px;
+    }
+
+    .accent {
+      color: var(--accent);
+    }
+
+    .success {
+      color: var(--success);
+    }
+
+    .danger {
+      color: var(--danger);
+    }
+
+    .purple {
+      color: var(--accent2);
+    }
+
+    /* ── Two-col layout ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 720px) {
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .card-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    /* ── Upload zone ── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      background: var(--surface);
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragging {
+      border-color: var(--accent);
+      background: #0c1e35;
+    }
+
+    .upload-icon {
+      font-size: 38px;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      color: var(--subtle);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .upload-text span {
+      color: var(--accent);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    /* ── Preview ── */
+    #preview-wrap {
+      display: none;
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    #preview {
+      max-width: 100%;
+      max-height: 240px;
+      border-radius: 8px;
+      border: 2px solid var(--border);
+      object-fit: contain;
+    }
+
+    #file-name {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ── Button ── */
+    .btn {
+      width: 100%;
+      margin-top: 16px;
+      padding: 13px;
+      background: linear-gradient(135deg, #0284c7, #6366f1);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+      letter-spacing: .02em;
+    }
+
+    .btn:hover {
+      opacity: .9;
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      background: var(--border);
+      color: var(--muted);
+      cursor: not-allowed;
+      transform: none;
+      opacity: 1;
+    }
+
+    .btn-sm {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .btn-sm:hover {
+      background: var(--border);
+    }
+
+    /* ── Spinner ── */
+    .loader {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: var(--muted);
+    }
+
+    .spinner {
+      width: 34px;
+      height: 34px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ── Result card ── */
+    #result {
+      margin-top: 20px;
+    }
+
+    .result-card {
+      border-radius: 10px;
+      padding: 20px 22px;
+      border-left: 5px solid;
+    }
+
+    .result-card.pneumonia {
+      background: #1e0f0f;
+      border-color: var(--danger);
+    }
+
+    .result-card.normal {
+      background: #0a1f18;
+      border-color: var(--success);
+    }
+
+    .result-label {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .result-label.pneumonia {
+      color: var(--danger);
+    }
+
+    .result-label.normal {
+      color: var(--success);
+    }
+
+    .result-conf {
+      font-size: 13px;
+      color: var(--subtle);
+      margin-bottom: 14px;
+    }
+
+    .prob-row {
+      margin-bottom: 10px;
+    }
+
+    .prob-label-row {
+      font-size: 12px;
+      color: var(--subtle);
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .bar-bg {
+      background: var(--surface);
+      border-radius: 6px;
+      height: 7px;
+    }
+
+    .bar {
+      height: 7px;
+      border-radius: 6px;
+      transition: width .6s ease;
+    }
+
+    .bar.pneumonia {
+      background: var(--danger);
+    }
+
+    .bar.normal {
+      background: var(--success);
+    }
+
+    .recommendation {
+      margin-top: 14px;
+      font-size: 13px;
+      color: #cbd5e1;
+      background: var(--bg);
+      padding: 12px 14px;
+      border-radius: 8px;
+      line-height: 1.6;
+    }
+
+    .meta-row {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 10px;
+      display: flex;
+      gap: 16px;
+    }
+
+    /* ── Metrics panel ── */
+    .plot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .plot-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .plot-card img {
+      width: 100%;
+      display: block;
+      background: #fff;
+    }
+
+    .plot-label {
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--subtle);
+      border-top: 1px solid var(--border);
+    }
+
+    .metric-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    /* ── History chart (pure CSS bars) ── */
+    .history-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 100px;
+      margin-top: 8px;
+    }
+
+    .h-bar-group {
+      flex: 1;
+      display: flex;
+      gap: 2px;
+      align-items: flex-end;
+    }
+
+    .h-bar {
+      flex: 1;
+      border-radius: 3px 3px 0 0;
+      transition: height .5s ease;
+      min-height: 2px;
+    }
+
+    .h-bar.train {
+      background: var(--accent);
+    }
+
+    .h-bar.val {
+      background: var(--accent2);
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--subtle);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      display: inline-block;
+      margin-right: 4px;
+    }
+
+    /* ── Samples panel ── */
+    .samples-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .sample-item {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color .2s, transform .2s;
+    }
+
+    .sample-item:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .sample-item.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(56, 189, 248, .3);
+    }
+
+    .sample-item img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .sample-name {
+      padding: 6px 8px;
+      font-size: 11px;
+      color: var(--subtle);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .empty-text {
+      font-size: 14px;
+    }
+
+    /* ── Info panel ── */
+    .info-section {
+      margin-bottom: 28px;
+    }
+
+    .info-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .info-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+
+    .info-key {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .info-val {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .arch-steps {
+      display: flex;
+      gap: 0;
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .arch-step {
+      flex: 1;
+      padding: 14px 10px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    .arch-step:last-child {
+      border-right: none;
+    }
+
+    .arch-step-icon {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .arch-step-label {
+      color: var(--subtle);
+      font-size: 11px;
+    }
+
+    .warning-banner {
+      background: #1c1200;
+      border: 1px solid #92400e;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #fcd34d;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .warning-banner.show {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── Header ─────────────────────────────────────────────────────────────── -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🫁</div>
+      Pneumonia Detection
+    </div>
+    <div class="status-pill">
+      <div class="dot" id="status-dot"></div>
+      <span id="status-text">Connecting…</span>
+    </div>
+  </header>
+
+  <!-- ── Nav ───────────────────────────────────────────────────────────────── -->
+  <nav>
+    <div class="tab active" onclick="switchTab('analyze', event)">🔬 Analyze</div>
+    <div class="tab" onclick="switchTab('samples', event)">🗂 Sample Images</div>
+    <div class="tab" onclick="switchTab('metrics', event)">📊 Metrics</div>
+    <div class="tab" onclick="switchTab('info', event)">ℹ️ Model Info</div>
+  </nav>
+
+  <!-- ── Main ──────────────────────────────────────────────────────────────── -->
+  <main>
+
+    <!-- Stats row (always visible) -->
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Model</div>
+        <div class="stat-value accent" id="stat-model">—</div>
+        <div class="stat-sub" id="stat-device">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Status</div>
+        <div class="stat-value" id="stat-status">—</div>
+        <div class="stat-sub" id="stat-trained-at">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">ROC AUC</div>
+        <div class="stat-value success" id="stat-auc">—</div>
+        <div class="stat-sub">Test set (0–1 scale)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Epochs</div>
+        <div class="stat-value purple" id="stat-epochs">—</div>
+        <div class="stat-sub">Training</div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Analyze ────────────────────────────────────────────────────── -->
+    <div class="panel active" id="panel-analyze">
+      <div class="two-col">
+
+        <!-- Upload -->
+        <div class="card">
+          <div class="card-head">Upload X-Ray <span style="color:var(--muted);font-weight:400;font-size:12px">JPG /
+              PNG</span></div>
+          <div class="card-body">
+            <div class="warning-banner" id="untrained-warn">
+              ⚠️ Model is using untrained weights — predictions are not clinically valid. Run
+              <code>python train.py</code> first.
+            </div>
+            <div class="upload-zone" id="dropZone">
+              <div class="upload-icon">📤</div>
+              <div class="upload-text">
+                Drag & drop a chest X-ray here<br>
+                or <span onclick="document.getElementById('fileInput').click()">browse files</span>
+              </div>
+              <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])">
+            </div>
+            <div id="preview-wrap">
+              <img id="preview" src="" alt="X-ray preview" />
+              <div id="file-name"></div>
+            </div>
+            <button class="btn" id="analyzeBtn" onclick="analyze()" disabled>Analyze X-Ray</button>
+          </div>
+        </div>
+
+        <!-- Result -->
+        <div class="card">
+          <div class="card-head">Prediction Result</div>
+          <div class="card-body">
+            <div class="loader" id="loader">
+              <div class="spinner"></div>
+              Analyzing X-ray…
+            </div>
+            <div id="result">
+              <div class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <div class="empty-text">Upload an X-ray image and click<br><strong>Analyze X-Ray</strong> to see results
+                  here.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── TAB: Sample Images ───────────────────────────────────────────────── -->
+    <div class="panel" id="panel-samples">
+      <div class="card">
+        <div class="card-head">
+          Sample X-Ray Images
+          <button class="btn-sm" onclick="loadSamples()">↻ Refresh</button>
+        </div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--subtle);margin-bottom:8px;">
+            Click a sample image to load it into the Analyze tab, or drop your own X-rays into the
+            <code>./samples/</code> folder.
+          </p>
+          <div id="samples-grid">
+            <div class="empty-state">
+              <div class="empty-icon">📂</div>
+              <div class="empty-text">Loading samples…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Metrics ─────────────────────────────────────────────────────── -->
+    <div class="panel" id="panel-metrics">
+      <div id="metrics-content">
+        <div class="empty-state" style="padding:60px">
+          <div class="empty-icon">⏳</div>
+          <div class="empty-text">Loading metrics…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Model Info ──────────────────────────────────────────────────── -->
+    <div class="panel" id="panel-info">
+      <div class="info-section">
+        <div class="info-title">Architecture</div>
+        <div class="arch-steps">
+          <div class="arch-step">
+            <div class="arch-step-icon">🖼️</div>
+            <div>Input</div>
+            <div class="arch-step-label">224×224 RGB</div>
+          </div>
+          <div class="arch-step">
+            <div class="arch-step-icon">🔷</div>
+            <div>ResNet Backbone</div>
+            <div class="arch-step-label">ImageNet pre-trained</div>
+          </div>
+          <div class="arch-step">
+            <div class="arch-step-icon">💧</div>
+            <div>Dropout 0.4</div>
+            <div class="arch-step-label">Regularization</div>
+          </div>
+          <div class="arch-step">
+            <div class="arch-step-icon">⚡</div>
+            <div>FC → 256 → 2</div>
+            <div class="arch-step-label">Classifier head</div>
+          </div>
+          <div class="arch-step">
+            <div class="arch-step-icon">📊</div>
+            <div>Softmax</div>
+            <div class="arch-step-label">NORMAL / PNEUMONIA</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-title">Training Configuration</div>
+        <div class="info-grid" id="config-grid">
+          <div class="info-item">
+            <div class="info-key">Model</div>
+            <div class="info-val" id="cfg-model">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-key">Epochs</div>
+            <div class="info-val" id="cfg-epochs">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-key">Learning Rate</div>
+            <div class="info-val" id="cfg-lr">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-key">Device</div>
+            <div class="info-val" id="cfg-device">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-key">Trained At</div>
+            <div class="info-val" id="cfg-trained-at">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-key">Checkpoint</div>
+            <div class="info-val" id="cfg-path">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-title">Dataset</div>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-key">Source</div>
+            <div class="info-val">Kaggle Chest X-Ray</div>
+          </div>
+          <div class="info-item">
+            <div class="info-key">Classes</div>
+            <div class="info-val">NORMAL · PNEUMONIA</div>
+          </div>
+          <div class="info-item">
+            <div class="info-key">Augmentation</div>
+            <div class="info-val">Flip · Rotation · ColorJitter</div>
+          </div>
+          <div class="info-item">
+            <div class="info-key">Optimizer</div>
+            <div class="info-val">AdamW + CosineAnnealing</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-title">⚠️ Clinical Disclaimer</div>
+        <div
+          style="background:var(--card);border:1px solid #92400e;border-radius:8px;padding:16px;font-size:13px;color:#fcd34d;line-height:1.7">
+          This tool is for <strong>educational and research purposes only</strong>. It is not a certified medical device
+          and must not be used as a substitute for professional clinical diagnosis. Always consult a licensed medical
+          professional for health decisions.
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const API = 'http://localhost:8001';
+    let selectedFile = null;
+    let modelDisplayName = 'ResNet';
+
+    // ── Tab switching ──────────────────────────────────────────────────────────
+    function switchTab(name, evt) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      evt.target.closest('.tab').classList.add('active');
+      document.getElementById('panel-' + name).classList.add('active');
+      if (name === 'metrics') loadMetrics();
+      if (name === 'samples') loadSamples();
+      if (name === 'info') loadInfo();
+    }
+
+    // ── Health check ───────────────────────────────────────────────────────────
+    async function checkHealth() {
+      try {
+        const r = await fetch(`${API}/health`);
+        const d = await r.json();
+        document.getElementById('status-dot').className = 'dot ok';
+        document.getElementById('status-text').textContent = 'Server online';
+
+        document.getElementById('stat-model').textContent = d.model || '—';
+        modelDisplayName = d.model || 'ResNet';
+        document.getElementById('stat-device').textContent = `Device: ${d.device || '—'}`;
+
+        const trained = d.model_trained;
+        document.getElementById('stat-status').textContent = trained ? 'Trained ✓' : 'Untrained';
+        document.getElementById('stat-status').className = 'stat-value ' + (trained ? 'success' : 'danger');
+        document.getElementById('stat-trained-at').textContent = d.model_info?.trained_at
+          ? `Trained: ${d.model_info.trained_at}` : 'Not yet trained';
+
+        document.getElementById('stat-epochs').textContent = d.model_info?.epochs ?? '—';
+
+        if (!trained) {
+          document.getElementById('untrained-warn').classList.add('show');
+        }
+
+        // populate info tab
+        document.getElementById('cfg-model').textContent = d.model || '—';
+        document.getElementById('cfg-device').textContent = d.device || '—';
+        document.getElementById('cfg-epochs').textContent = d.model_info?.epochs ?? '—';
+        document.getElementById('cfg-lr').textContent = d.model_info?.lr ?? '—';
+        document.getElementById('cfg-trained-at').textContent = d.model_info?.trained_at ?? 'Not trained';
+        document.getElementById('cfg-path').textContent = d.model_info?.path ?? 'No checkpoint';
+
+      } catch {
+        document.getElementById('status-dot').className = 'dot err';
+        document.getElementById('status-text').textContent = 'Server offline';
+      }
+    }
+
+    // ── Drag & drop ────────────────────────────────────────────────────────────
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragging'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault(); dropZone.classList.remove('dragging');
+      handleFile(e.dataTransfer.files[0]);
+    });
+
+    function handleFile(file) {
+      if (!file || !file.type.startsWith('image/')) return;
+      selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('preview').src = e.target.result;
+        document.getElementById('file-name').textContent = file.name;
+        document.getElementById('preview-wrap').style.display = 'block';
+        document.getElementById('analyzeBtn').disabled = false;
+        document.getElementById('result').innerHTML = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // load a sample URL into the analyze tab
+    function loadSampleIntoAnalyze(url, name) {
+      fetch(url)
+        .then(r => r.blob())
+        .then(blob => {
+          selectedFile = new File([blob], name, { type: blob.type });
+          const reader = new FileReader();
+          reader.onload = e => {
+            document.getElementById('preview').src = e.target.result;
+            document.getElementById('file-name').textContent = name;
+            document.getElementById('preview-wrap').style.display = 'block';
+            document.getElementById('analyzeBtn').disabled = false;
+            document.getElementById('result').innerHTML = '';
+          };
+          reader.readAsDataURL(blob);
+          // switch to analyze tab
+          document.querySelectorAll('.tab')[0].click();
+        });
+    }
+
+    // ── Analyze ────────────────────────────────────────────────────────────────
+    async function analyze() {
+      if (!selectedFile) return;
+      document.getElementById('loader').style.display = 'block';
+      document.getElementById('result').innerHTML = '';
+      document.getElementById('analyzeBtn').disabled = true;
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      try {
+        const res = await fetch(`${API}/predict`, { method: 'POST', body: formData });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `Server error (${res.status})`);
+        }
+        const data = await res.json();
+        showResult(data);
+      } catch (err) {
+        showError(err.message);
+      } finally {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('analyzeBtn').disabled = false;
+      }
+    }
+
+    function showResult(data) {
+      const isPneu = data.label === 'PNEUMONIA';
+      const cls = isPneu ? 'pneumonia' : 'normal';
+      const icon = isPneu ? '⚠️' : '✅';
+      const normalPct = (data.probabilities['NORMAL'] * 100).toFixed(1);
+      const pneuPct = (data.probabilities['PNEUMONIA'] * 100).toFixed(1);
+      const trained = data.model_trained ? '' :
+        '<div style="font-size:12px;color:#fcd34d;margin-top:8px">⚠️ Untrained model — not clinically valid</div>';
+
+      document.getElementById('result').innerHTML = `
+      <div class="result-card ${cls}">
+        <div class="result-label ${cls}">${icon} ${data.label}</div>
+        <div class="result-conf">Confidence: ${(data.confidence * 100).toFixed(2)}%</div>
+
+        <div class="prob-row">
+          <div class="prob-label-row"><span>Normal</span><span>${normalPct}%</span></div>
+          <div class="bar-bg"><div class="bar normal" style="width:${normalPct}%"></div></div>
+        </div>
+        <div class="prob-row">
+          <div class="prob-label-row"><span>Pneumonia</span><span>${pneuPct}%</span></div>
+          <div class="bar-bg"><div class="bar pneumonia" style="width:${pneuPct}%"></div></div>
+        </div>
+
+        <div class="recommendation">${data.recommendation}</div>
+        <div class="meta-row">
+          <span>⏱ ${data.inference_time_ms}ms</span>
+          <span>🤖 ${modelDisplayName}</span>
+        </div>
+        ${trained}
+      </div>`;
+    }
+
+    function showError(msg) {
+      document.getElementById('result').innerHTML = `
+      <div class="result-card pneumonia">
+        <div class="result-label pneumonia">❌ Connection Error</div>
+        <div class="recommendation">${msg}<br><br>Make sure the server is running:<br><code>uvicorn app:app --port 8001</code></div>
+      </div>`;
+    }
+
+    // ── Metrics tab ────────────────────────────────────────────────────────────
+    async function loadMetrics() {
+      const el = document.getElementById('metrics-content');
+      try {
+        const r = await fetch(`${API}/metrics`);
+        if (!r.ok) throw new Error('no metrics');
+        const d = await r.json();
+
+        // ROC AUC badge
+        const auc = d.test_metrics?.roc_auc;
+        if (auc != null) {
+          document.getElementById('stat-auc').textContent = auc.toFixed(3);
+        }
+
+        // Build plots section
+        let plotsHtml = '';
+        if (d.plots && Object.keys(d.plots).length > 0) {
+          const labels = {
+            'confusion_matrix.png': 'Confusion Matrix',
+            'roc_curve.png': 'ROC Curve',
+            'training_history.png': 'Training History',
+          };
+          plotsHtml = '<div class="plot-grid">';
+          for (const [name, url] of Object.entries(d.plots)) {
+            plotsHtml += `
+            <div class="plot-card">
+              <img src="${url}?t=${Date.now()}" alt="${labels[name] || name}" loading="lazy"/>
+              <div class="plot-label">${labels[name] || name}</div>
+            </div>`;
+          }
+          plotsHtml += '</div>';
+        }
+
+        // Build history mini-chart
+        let histHtml = '';
+        if (d.history) {
+          const h = d.history;
+          const epochs = h.train_acc?.length || 0;
+          const maxAcc = Math.max(...(h.train_acc || [1]), ...(h.val_acc || [1]));
+          if (epochs > 0) {
+            let bars = '';
+            for (let i = 0; i < epochs; i++) {
+              const tH = ((h.train_acc[i] || 0) / maxAcc * 100).toFixed(0);
+              const vH = ((h.val_acc[i] || 0) / maxAcc * 100).toFixed(0);
+              bars += `
+              <div class="h-bar-group" title="Epoch ${i + 1}">
+                <div class="h-bar train" style="height:${tH}%"></div>
+                <div class="h-bar val"   style="height:${vH}%"></div>
+              </div>`;
+            }
+            histHtml = `
+            <div class="card" style="margin-bottom:20px">
+              <div class="card-head">Accuracy per Epoch</div>
+              <div class="card-body">
+                <div class="history-chart">${bars}</div>
+                <div class="chart-legend">
+                  <span><span class="legend-dot" style="background:var(--accent)"></span>Train</span>
+                  <span><span class="legend-dot" style="background:var(--accent2)"></span>Val</span>
+                </div>
+              </div>
+            </div>`;
+          }
+        }
+
+        // AUC summary card
+        let aucHtml = '';
+        if (auc != null) {
+          aucHtml = `
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-head">Test Set Performance</div>
+            <div class="card-body" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+              <span class="metric-badge success">ROC AUC: ${auc.toFixed(3)}</span>
+              <span style="font-size:13px;color:var(--subtle)">Scale 0–1 · 1.0 = perfect · 0.5 = random</span>
+            </div>
+          </div>`;
+        }
+
+        el.innerHTML = (aucHtml || '') + (histHtml || '') + (plotsHtml || '');
+
+        if (!aucHtml && !histHtml && !plotsHtml) {
+          el.innerHTML = noMetrics();
+        }
+      } catch {
+        el.innerHTML = noMetrics();
+      }
+    }
+
+    function noMetrics() {
+      return `<div class="empty-state" style="padding:60px">
+      <div class="empty-icon">📉</div>
+      <div class="empty-text">No metrics found yet.<br>Run <code>python train.py</code> to generate them.</div>
+    </div>`;
+    }
+
+    // ── Samples tab ────────────────────────────────────────────────────────────
+    async function loadSamples() {
+      const el = document.getElementById('samples-grid');
+      try {
+        const r = await fetch(`${API}/api/samples`);
+        const d = await r.json();
+        if (!d.samples || d.samples.length === 0) {
+          el.innerHTML = `<div class="empty-state">
+          <div class="empty-icon">📂</div>
+          <div class="empty-text">No sample images found.<br>Add chest X-ray images to the <code>./samples/</code> folder.</div>
+        </div>`;
+          return;
+        }
+        el.innerHTML = `<div class="samples-grid">` +
+          d.samples.map(s => `
+          <div class="sample-item" onclick="loadSampleIntoAnalyze('${API}${s.url}','${s.name}')">
+            <img src="${API}${s.url}" alt="${s.name}" loading="lazy"/>
+            <div class="sample-name">${s.name}</div>
+          </div>`).join('') +
+          `</div>`;
+      } catch {
+        el.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">❌</div>
+        <div class="empty-text">Could not load samples.<br>Make sure the server is running.</div>
+      </div>`;
+      }
+    }
+
+    // ── Info tab ───────────────────────────────────────────────────────────────
+    function loadInfo() { /* already populated from checkHealth */ }
+
+    // ── Init ───────────────────────────────────────────────────────────────────
+    checkHealth();
+    setInterval(checkHealth, 30000);
+  </script>
+</body>
+
+</html>

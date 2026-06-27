@@ -1,0 +1,4 @@
+{
+  "roc_auc": 0.6451612903225806,
+  "classification_report": "              precision    recall  f1-score   support\n\n      NORMAL       0.75      0.09      0.16        33\n   PNEUMONIA       0.50      0.97      0.66        31\n\n    accuracy                           0.52        64\n   macro avg       0.62      0.53      0.41        64\nweighted avg       0.63      0.52      0.40        64\n"
+}
