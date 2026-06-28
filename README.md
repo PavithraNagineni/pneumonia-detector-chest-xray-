@@ -1,4 +1,4 @@
-# 🫁 Pneumonia Detector using Chest X-ray Images
+# 🫁 Pneumonia Detector using Chest X-ray
 
 A deep learning-powered web application that detects **Pneumonia** from chest X-ray images using **ResNet Transfer Learning**. The application provides real-time predictions through a **FastAPI** backend and an interactive web interface.
 
