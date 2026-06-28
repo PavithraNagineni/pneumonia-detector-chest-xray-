@@ -45,10 +45,12 @@ app.add_middleware(
 
 # ── Static folders ────────────────────────────────────────────────────────────
 os.makedirs("./outputs", exist_ok=True)
-os.makedirs("./samples", exist_ok=True)
+os.makedirs("./outputs", exist_ok=True)
+
+if os.path.exists("samples"):
+    app.mount("/samples", StaticFiles(directory="samples"), name="samples")
 
 app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
-app.mount("/samples", StaticFiles(directory="samples"),  name="samples")
 
 # ── State ─────────────────────────────────────────────────────────────────────
 model           = None
@@ -227,14 +229,23 @@ def get_metrics():
 
 @app.get("/api/samples")
 def list_samples():
-    """List available sample X-ray images in /samples folder."""
-    samples_dir = "./samples"
+    if not os.path.exists("samples"):
+        return {"samples": [], "count": 0}
+
     files = []
-    if os.path.isdir(samples_dir):
-        for fn in sorted(os.listdir(samples_dir)):
-            if fn.lower().endswith((".png", ".jpg", ".jpeg")):
-                files.append({"name": fn, "url": f"/samples/{fn}"})
-    return {"samples": files, "count": len(files)}
+    for fn in sorted(os.listdir("samples")):
+        if fn.lower().endswith((".png", ".jpg", ".jpeg")):
+            files.append(
+                {
+                    "name": fn,
+                    "url": f"/samples/{fn}"
+                }
+            )
+
+    return {
+        "samples": files,
+        "count": len(files)
+    }
 
 
 @app.post("/predict", response_model=PredictionResponse)
