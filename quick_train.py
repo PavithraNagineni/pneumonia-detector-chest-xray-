@@ -20,7 +20,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-OUTPUT_DIR = "./outputs/pneumonia"
+OUTPUT_DIR = "./outputs"
 DATA_DIR   = "./data"
 SEED       = 42
 torch.manual_seed(SEED)
