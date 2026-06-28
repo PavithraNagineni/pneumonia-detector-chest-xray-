@@ -44,7 +44,7 @@ app.add_middleware(
 )
 
 # ── Static folders ────────────────────────────────────────────────────────────
-os.makedirs("./outputs/pneumonia", exist_ok=True)
+os.makedirs("./outputs", exist_ok=True)
 os.makedirs("./samples", exist_ok=True)
 
 app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
