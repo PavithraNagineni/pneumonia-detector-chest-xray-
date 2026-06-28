@@ -138,7 +138,7 @@ async def load_model():
     m = build_model(model_name).to(DEVICE)
 
     if model_path:
-    try:
+      try:
         state = torch.load(
             model_path,
             map_location=DEVICE,
