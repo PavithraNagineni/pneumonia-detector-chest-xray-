@@ -24,8 +24,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ── Config ────────────────────────────────────────────────────────────────────
-CONFIG_PATH = "./outputs/pneumonia/model_config.json"
-MODEL_DIR   = "./outputs/pneumonia"
+CONFIG_PATH = "./outputs/model_config.json"
+MODEL_DIR   = "./outputs"
 DEVICE      = "cuda" if torch.cuda.is_available() else "cpu"
 LABELS      = ["NORMAL", "PNEUMONIA"]
 
@@ -217,7 +217,7 @@ def get_metrics():
     for name in ("confusion_matrix.png", "roc_curve.png", "training_history.png"):
         p = os.path.join(MODEL_DIR, name)
         if os.path.exists(p):
-            plots[name] = f"/outputs/pneumonia/{name}"
+            plots[name] = f"/outputs/{name}"
     result["plots"] = plots
 
     if not result:
