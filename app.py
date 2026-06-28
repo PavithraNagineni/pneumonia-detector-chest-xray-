@@ -45,12 +45,11 @@ app.add_middleware(
 
 # ── Static folders ────────────────────────────────────────────────────────────
 os.makedirs("./outputs", exist_ok=True)
-os.makedirs("./outputs", exist_ok=True)
+
+app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
 
 if os.path.exists("samples"):
     app.mount("/samples", StaticFiles(directory="samples"), name="samples")
-
-app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
 
 # ── State ─────────────────────────────────────────────────────────────────────
 model           = None
@@ -230,23 +229,24 @@ def get_metrics():
 @app.get("/api/samples")
 def list_samples():
     if not os.path.exists("samples"):
-        return {"samples": [], "count": 0}
+        return {
+            "samples": [],
+            "count": 0
+        }
 
     files = []
+
     for fn in sorted(os.listdir("samples")):
         if fn.lower().endswith((".png", ".jpg", ".jpeg")):
-            files.append(
-                {
-                    "name": fn,
-                    "url": f"/samples/{fn}"
-                }
-            )
+            files.append({
+                "name": fn,
+                "url": f"/samples/{fn}"
+            })
 
     return {
         "samples": files,
         "count": len(files)
     }
-
 
 @app.post("/predict", response_model=PredictionResponse)
 async def predict(file: UploadFile = File(...)):
