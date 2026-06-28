@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 LABELS     = ["NORMAL", "PNEUMONIA"]
 DATA_DIR   = "./data"
-OUTPUT_DIR = "./outputs/pneumonia"
+OUTPUT_DIR = "./outputs"
 SEED       = 42
 torch.manual_seed(SEED)
 
