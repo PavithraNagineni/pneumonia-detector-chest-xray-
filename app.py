@@ -132,17 +132,26 @@ async def load_model():
             logger.warning(f"Could not parse config ({e}), defaulting to resnet50")
 
     # 2. Resolve checkpoint path dynamically
-    model_path = _resolve_model_path(model_name)
+    model_path = _resolve_model_path(model_name
 
     # 3. Build model
     m = build_model(model_name).to(DEVICE)
 
     if model_path:
-        try:
-            state = torch.load(model_path, map_location=DEVICE)
+    try:
+        state = torch.load(
+            model_path,
+            map_location=DEVICE,
+            weights_only=False
+        )
+
+        if isinstance(state, dict) and "model_state_dict" in state:
+            m.load_state_dict(state["model_state_dict"])
+        else:
             m.load_state_dict(state)
-            m.eval()
-            model_meta = {
+
+        m.eval()
+        model_meta = {
                 "name":       model_name,
                 "trained":    True,
                 "path":       model_path,
