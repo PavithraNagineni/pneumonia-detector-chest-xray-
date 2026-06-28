@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: pneumonia-detection
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 8001
+      # Optional: set in Render dashboard after uploading weights to cloud storage
+      # - key: MODEL_WEIGHTS_URL
+      #   sync: false

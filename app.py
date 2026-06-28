@@ -17,7 +17,7 @@ import torch.nn as nn
 from torchvision import models, transforms
 from PIL import Image
 import numpy as np
-import io, os, time, json
+import io, os, time, json, urllib.request
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -93,10 +93,30 @@ def _resolve_model_path(model_name: str) -> str | None:
     return None
 
 
+def _ensure_model_weights() -> None:
+    """Download model weights when MODEL_WEIGHTS_URL is set and no checkpoint exists."""
+    if _resolve_model_path("resnet50") or _resolve_model_path("resnet18"):
+        return
+
+    url = os.environ.get("MODEL_WEIGHTS_URL")
+    if not url:
+        return
+
+    dest = os.path.join(MODEL_DIR, "best_model.pth")
+    logger.info(f"Downloading model weights from {url}")
+    try:
+        urllib.request.urlretrieve(url, dest)
+        logger.info(f"Model weights saved to {dest}")
+    except Exception as e:
+        logger.error(f"Failed to download model weights ({e})")
+
+
 # ── Startup: dynamic model loading ────────────────────────────────────────────
 @app.on_event("startup")
 async def load_model():
     global model, model_meta
+
+    _ensure_model_weights()
 
     # 1. Read architecture from config if available
     model_name = "resnet50"
